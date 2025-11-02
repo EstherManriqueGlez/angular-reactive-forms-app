@@ -1,5 +1,17 @@
-import { AbstractControl, FormArray, FormGroup, ValidationErrors } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormGroup,
+  ValidationErrors,
+} from '@angular/forms';
 
+async function sleep() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, 2500);
+  });
+}
 export class FormUtils {
   // Regular Expressions Patterns
   static namePattern = '([a-zA-Z]+) ([a-zA-Z]+)';
@@ -18,6 +30,12 @@ export class FormUtils {
 
         case 'email':
           return `El valor ingresado no es un correo válido.`;
+        
+        case 'emailTaken':
+          return `El correo electrónico ya está en uso.`;
+
+        case 'notStraider':
+          return `El nombre de usuario no puede ser utilizado por políticas de la empresa.`;
 
         case 'pattern':
           if (errors['pattern'].requiredPattern === FormUtils.emailPattern) {
@@ -70,5 +88,31 @@ export class FormUtils {
         ? null
         : { passwordsNotMatch: true };
     };
+  }
+
+  static async checkingServerResponse(
+    control: AbstractControl
+  ): Promise<ValidationErrors | null> {
+    console.log('Validando contra servidor...');
+
+    await sleep();
+
+    const formValue = control.value;
+
+    if (formValue === 'hola@mundo.com') {
+      return { 
+        emailTaken: true 
+      };
+    }
+
+    return null;
+  }
+
+  static notStraider(control: AbstractControl): ValidationErrors | null {
+
+    const value = control.value;
+
+    return value === 'strider' ? { notStraider: true } : null;
+
   }
 }
