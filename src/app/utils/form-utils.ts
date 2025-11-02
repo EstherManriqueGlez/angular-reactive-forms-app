@@ -1,6 +1,11 @@
-import { FormArray, FormGroup, ValidationErrors } from '@angular/forms';
+import { AbstractControl, FormArray, FormGroup, ValidationErrors } from '@angular/forms';
 
 export class FormUtils {
+  // Regular Expressions Patterns
+  static namePattern = '([a-zA-Z]+) ([a-zA-Z]+)';
+  static emailPattern = '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$';
+  static notOnlySpacesPattern = '^[a-zA-Z0-9]+$';
+
   static getMessageError(errors: ValidationErrors): string | null {
     for (const key of Object.keys(errors)) {
       switch (key) {
@@ -10,6 +15,18 @@ export class FormUtils {
           return `Se requieren un mínimo de ${errors['minlength'].requiredLength} caracteres.`;
         case 'min':
           return `El valor mínimo es ${errors['min'].min}.`;
+
+        case 'email':
+          return `El valor ingresado no es un correo válido.`;
+
+        case 'pattern':
+          if (errors['pattern'].requiredPattern === FormUtils.emailPattern) {
+            return `El valor ingresado debe ser en formato de correo electrónico.`;
+          }
+          return `El valor ingresado tiene un formato inválido.`;
+
+        default:
+          return `Error de validación no controlado: ${key}`;
       }
     }
     return null;
@@ -42,5 +59,16 @@ export class FormUtils {
     const errors = formArray.controls[index].errors ?? {};
 
     return this.getMessageError(errors);
+  }
+
+  static isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
+    return (formGroup: AbstractControl) => {
+      const fieldOneValue = formGroup.get(fieldOne)?.value;
+      const fieldTwoValue = formGroup.get(fieldTwo)?.value;
+
+      return fieldOneValue === fieldTwoValue
+        ? null
+        : { passwordsNotMatch: true };
+    };
   }
 }
